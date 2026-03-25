@@ -12,3 +12,5 @@ Zadanie 1 Docker
 ✅ 4.5 Stworzyć przykład typu HelloWorld oraz uruchomienie aplikacji przez CMD oraz gradle [Link do commita](https://github.com/bertck/E-Biznes2026/commit/de84ea70464c519bb65b20962cb2072943709908)
 
 ✅ 5.0 Dodać konfigurację docker-compose [Link do commita](https://github.com/bertck/E-Biznes2026/commit/8142f1e95d90b2c51834fcb826aee326a0ed3c02)
+
+[Link do obrazów](https://hub.docker.com/repositories/bart0lomeo)
