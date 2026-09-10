@@ -1,0 +1,25 @@
+# sbt / Scala
+target/
+project/target/
+project/project/
+*.class
+*.log
+
+# Metals / Bloop (Scala language server w VSCode)
+.metals/
+.bloop/
+.bsp/
+metals.sbt
+
+# VSCode
+.vscode/
+
+# IntelliJ
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Play Framework
+*.pid
