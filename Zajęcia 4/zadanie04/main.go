@@ -16,12 +16,17 @@ func main() {
 	e.Use(middleware.Recover())
 
 	productHandler := handlers.NewProductHandler()
+	cartHandler := handlers.NewCartHandler()
 
 	e.GET("/products", productHandler.GetAll)
 	e.GET("/products/:id", productHandler.GetByID)
 	e.POST("/products", productHandler.Create)
 	e.PUT("/products/:id", productHandler.Update)
 	e.DELETE("/products/:id", productHandler.Delete)
+
+	e.POST("/carts", cartHandler.Create)
+	e.GET("/carts/:id", cartHandler.GetByID)
+	e.POST("/carts/:id/items", cartHandler.AddItem)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

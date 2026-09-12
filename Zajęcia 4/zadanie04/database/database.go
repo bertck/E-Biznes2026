@@ -17,7 +17,7 @@ func Connect() {
 		log.Fatal("nie udalo sie polaczyc z baza danych: ", err)
 	}
 
-	err = db.AutoMigrate(&models.Product{})
+	err = db.AutoMigrate(&models.Product{}, &models.Cart{}, &models.CartItem{})
 	if err != nil {
 		log.Fatal("nie udalo sie wykonac migracji: ", err)
 	}
