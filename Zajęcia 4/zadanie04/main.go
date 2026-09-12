@@ -1,6 +1,7 @@
 package main
 
 import (
+	"zadanie04/database"
 	"zadanie04/handlers"
 
 	"github.com/labstack/echo/v4"
@@ -8,6 +9,8 @@ import (
 )
 
 func main() {
+	database.Connect()
+
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())

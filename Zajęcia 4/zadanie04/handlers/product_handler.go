@@ -4,26 +4,23 @@ import (
 	"net/http"
 	"strconv"
 
+	"zadanie04/database"
 	"zadanie04/models"
 
 	"github.com/labstack/echo/v4"
 )
 
-type ProductHandler struct {
-	products []models.Product
-	nextID   int
-}
+type ProductHandler struct{}
 
 func NewProductHandler() *ProductHandler {
-	return &ProductHandler{
-		products: []models.Product{},
-		nextID:   1,
-	}
+	return &ProductHandler{}
 }
 
 // GET /products
 func (h *ProductHandler) GetAll(c echo.Context) error {
-	return c.JSON(http.StatusOK, h.products)
+	var products []models.Product
+	database.DB.Find(&products)
+	return c.JSON(http.StatusOK, products)
 }
 
 // GET /products/:id
@@ -33,12 +30,13 @@ func (h *ProductHandler) GetByID(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "niepoprawne id"})
 	}
 
-	for _, p := range h.products {
-		if p.ID == id {
-			return c.JSON(http.StatusOK, p)
-		}
+	var product models.Product
+	result := database.DB.First(&product, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "produkt nie znaleziony"})
 	}
-	return c.JSON(http.StatusNotFound, map[string]string{"error": "produkt nie znaleziony"})
+
+	return c.JSON(http.StatusOK, product)
 }
 
 // POST /products
@@ -48,10 +46,7 @@ func (h *ProductHandler) Create(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "niepoprawne dane"})
 	}
 
-	product.ID = h.nextID
-	h.nextID++
-	h.products = append(h.products, product)
-
+	database.DB.Create(&product)
 	return c.JSON(http.StatusCreated, product)
 }
 
@@ -62,19 +57,22 @@ func (h *ProductHandler) Update(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "niepoprawne id"})
 	}
 
+	var product models.Product
+	result := database.DB.First(&product, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "produkt nie znaleziony"})
+	}
+
 	var updated models.Product
 	if err := c.Bind(&updated); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "niepoprawne dane"})
 	}
 
-	for i, p := range h.products {
-		if p.ID == id {
-			updated.ID = id
-			h.products[i] = updated
-			return c.JSON(http.StatusOK, updated)
-		}
-	}
-	return c.JSON(http.StatusNotFound, map[string]string{"error": "produkt nie znaleziony"})
+	product.Name = updated.Name
+	product.Price = updated.Price
+	database.DB.Save(&product)
+
+	return c.JSON(http.StatusOK, product)
 }
 
 // DELETE /products/:id
@@ -84,11 +82,12 @@ func (h *ProductHandler) Delete(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "niepoprawne id"})
 	}
 
-	for i, p := range h.products {
-		if p.ID == id {
-			h.products = append(h.products[:i], h.products[i+1:]...)
-			return c.NoContent(http.StatusNoContent)
-		}
+	var product models.Product
+	result := database.DB.First(&product, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "produkt nie znaleziony"})
 	}
-	return c.JSON(http.StatusNotFound, map[string]string{"error": "produkt nie znaleziony"})
+
+	database.DB.Delete(&product)
+	return c.NoContent(http.StatusNoContent)
 }
