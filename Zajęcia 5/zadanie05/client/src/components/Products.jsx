@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-function Products() {
+function Products({ onAddToCart }) {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -27,7 +27,8 @@ function Products() {
             <ul>
                 {products.map((p) => (
                     <li key={p.id}>
-                        {p.name} – {p.price} zł
+                        {p.name} – {p.price} zł{' '}
+                        <button onClick={() => onAddToCart(p)}>Add to cart</button>
                     </li>
                 ))}
             </ul>
