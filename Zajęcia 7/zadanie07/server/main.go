@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
+	"strings"
 )
 
 type Product struct {
@@ -81,8 +81,9 @@ func paymentsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sanitizedCardName := strings.ReplaceAll(strings.ReplaceAll(payment.CardName, "\n", "_"), "\r", "_")
 	fmt.Printf("Received payment: CardName=%s Amount=%.2f ProductID=%d\n",
-		strconv.Quote(payment.CardName), payment.Amount, payment.ProductID)
+		sanitizedCardName, payment.Amount, payment.ProductID)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
