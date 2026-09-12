@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type Product struct {
@@ -29,6 +30,31 @@ func enableCORS(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+}
+
+func isValidPayment(p Payment) bool {
+	if p.Amount <= 0 {
+		return false
+	}
+	if p.CardName == "" {
+		return false
+	}
+	return true
+}
+
+func findProductByID(id int) (Product, bool) {
+	for _, p := range products {
+		if p.ID == id {
+			return p, true
+		}
+	}
+	return Product{}, false
+}
+
+func sanitizeForLog(input string) string {
+	sanitized := strings.ReplaceAll(input, "\n", "")
+	sanitized = strings.ReplaceAll(sanitized, "\r", "")
+	return sanitized
 }
 
 func productsHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +82,13 @@ func paymentsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Received payment: %+v\n", payment)
+	if !isValidPayment(payment) {
+		http.Error(w, "Invalid payment data", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("Received payment: CardName=%s Amount=%.2f ProductID=%d\n",
+		sanitizeForLog(payment.CardName), payment.Amount, payment.ProductID)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
