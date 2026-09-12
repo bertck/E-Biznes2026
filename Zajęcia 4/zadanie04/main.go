@@ -17,6 +17,7 @@ func main() {
 
 	productHandler := handlers.NewProductHandler()
 	cartHandler := handlers.NewCartHandler()
+	categoryHandler := handlers.NewCategoryHandler()
 
 	e.GET("/products", productHandler.GetAll)
 	e.GET("/products/:id", productHandler.GetByID)
@@ -27,6 +28,10 @@ func main() {
 	e.POST("/carts", cartHandler.Create)
 	e.GET("/carts/:id", cartHandler.GetByID)
 	e.POST("/carts/:id/items", cartHandler.AddItem)
+
+	e.GET("/categories", categoryHandler.GetAll)
+	e.GET("/categories/:id", categoryHandler.GetByID)
+	e.POST("/categories", categoryHandler.Create)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

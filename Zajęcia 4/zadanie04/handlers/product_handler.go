@@ -19,7 +19,7 @@ func NewProductHandler() *ProductHandler {
 // GET /products
 func (h *ProductHandler) GetAll(c echo.Context) error {
 	var products []models.Product
-	database.DB.Find(&products)
+	database.DB.Preload("Category").Find(&products)
 	return c.JSON(http.StatusOK, products)
 }
 
@@ -31,7 +31,7 @@ func (h *ProductHandler) GetByID(c echo.Context) error {
 	}
 
 	var product models.Product
-	result := database.DB.First(&product, id)
+	result := database.DB.Preload("Category").First(&product, id)
 	if result.Error != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "produkt nie znaleziony"})
 	}
