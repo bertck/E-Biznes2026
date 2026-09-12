@@ -6,12 +6,16 @@ describe('Cart page', () => {
     it('shows an empty cart message when nothing is added', () => {
         cy.get('[data-cy=nav-cart]').click();
         cy.get('[data-cy=empty-cart-message]').should('be.visible');
+        cy.get('[data-cy=cart-item]').should('not.exist');
+        cy.get('[data-cy=cart-total]').should('not.exist');
     });
 
     it('adds a product to the cart', () => {
         cy.get('[data-cy=add-to-cart-btn]').first().click();
         cy.get('[data-cy=nav-cart]').click();
         cy.get('[data-cy=cart-item]').should('have.length', 1);
+        cy.get('[data-cy=cart-item]').first().should('be.visible');
+        cy.get('[data-cy=empty-cart-message]').should('not.exist');
     });
 
     it('adds multiple products to the cart', () => {
@@ -19,13 +23,17 @@ describe('Cart page', () => {
         cy.get('[data-cy=add-to-cart-btn]').eq(1).click();
         cy.get('[data-cy=nav-cart]').click();
         cy.get('[data-cy=cart-item]').should('have.length', 2);
+        cy.get('[data-cy=cart-item]').eq(0).should('be.visible');
+        cy.get('[data-cy=cart-item]').eq(1).should('be.visible');
     });
 
     it('displays the correct total price', () => {
         cy.get('[data-cy=product-price]').first().invoke('text').then((price) => {
             cy.get('[data-cy=add-to-cart-btn]').first().click();
             cy.get('[data-cy=nav-cart]').click();
+            cy.get('[data-cy=cart-total]').should('be.visible');
             cy.get('[data-cy=cart-total]').should('contain', parseFloat(price).toFixed(2));
+            cy.get('[data-cy=cart-total]').should('not.be.empty');
         });
     });
 
@@ -33,5 +41,7 @@ describe('Cart page', () => {
         cy.get('[data-cy=add-to-cart-btn]').first().click();
         cy.get('[data-cy=nav-cart]').click();
         cy.get('[data-cy=empty-cart-message]').should('not.exist');
+        cy.get('[data-cy=cart-item]').should('have.length.greaterThan', 0);
+        cy.get('[data-cy=cart-list]').should('exist');
     });
 });
