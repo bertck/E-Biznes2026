@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useCart } from '../context/CartContext';
 
-function Products({ onAddToCart }) {
+function Products() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { addToCart } = useCart();
 
     useEffect(() => {
         fetch('http://localhost:8080/products')
@@ -28,7 +30,7 @@ function Products({ onAddToCart }) {
                 {products.map((p) => (
                     <li key={p.id}>
                         {p.name} – {p.price} zł{' '}
-                        <button onClick={() => onAddToCart(p)}>Add to cart</button>
+                        <button onClick={() => addToCart(p)}>Add to cart</button>
                     </li>
                 ))}
             </ul>

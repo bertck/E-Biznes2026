@@ -1,16 +1,16 @@
 import { useState } from 'react';
+import { useCart } from '../context/CartContext';
 
 function Payments() {
+    const { total, clearCart } = useCart();
     const [cardName, setCardName] = useState('');
-    const [amount, setAmount] = useState('');
     const [status, setStatus] = useState(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
         const payment = {
-            productId: 1,
-            amount: parseFloat(amount),
+            amount: total,
             cardName: cardName,
         };
 
@@ -20,8 +20,9 @@ function Payments() {
             body: JSON.stringify(payment),
         })
             .then((res) => res.json())
-            .then((data) => {
+            .then(() => {
                 setStatus('Payment sent successfully!');
+                clearCart();
             })
             .catch((err) => {
                 setStatus('Error sending payment: ' + err.message);
@@ -31,6 +32,7 @@ function Payments() {
     return (
         <div>
             <h2>Payments</h2>
+            <p>Amount to pay: {total.toFixed(2)} zł</p>
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>Name on card: </label>
@@ -41,16 +43,9 @@ function Payments() {
                         required
                     />
                 </div>
-                <div>
-                    <label>Amount: </label>
-                    <input
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit">Pay</button>
+                <button type="submit" disabled={total === 0}>
+                    Pay
+                </button>
             </form>
             {status && <p>{status}</p>}
         </div>

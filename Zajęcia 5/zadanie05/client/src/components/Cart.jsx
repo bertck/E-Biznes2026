@@ -1,5 +1,7 @@
-function Cart({ cartItems }) {
-  const total = cartItems.reduce((sum, item) => sum + item.price, 0);
+import { useCart } from '../context/CartContext';
+
+function Cart() {
+  const { cartItems, total } = useCart();
 
   return (
     <div>
