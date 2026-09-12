@@ -9,6 +9,9 @@ COPY main.go ./
 
 RUN go build -o server .
 
+RUN adduser -D -g '' appuser
+USER appuser
+
 EXPOSE 8080
 
 CMD ["./server"]
