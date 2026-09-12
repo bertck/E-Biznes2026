@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
+	"strconv"
 )
 
 type Product struct {
@@ -51,12 +51,6 @@ func findProductByID(id int) (Product, bool) {
 	return Product{}, false
 }
 
-func sanitizeForLog(input string) string {
-	sanitized := strings.ReplaceAll(input, "\n", "")
-	sanitized = strings.ReplaceAll(sanitized, "\r", "")
-	return sanitized
-}
-
 func productsHandler(w http.ResponseWriter, r *http.Request) {
 	enableCORS(w)
 	if r.Method == http.MethodOptions {
@@ -88,7 +82,7 @@ func paymentsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("Received payment: CardName=%s Amount=%.2f ProductID=%d\n",
-		sanitizeForLog(payment.CardName), payment.Amount, payment.ProductID)
+		strconv.Quote(payment.CardName), payment.Amount, payment.ProductID)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
