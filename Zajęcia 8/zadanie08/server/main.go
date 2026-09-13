@@ -6,6 +6,9 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Product struct {
@@ -20,11 +23,31 @@ type Payment struct {
 	CardName  string  `json:"cardName"`
 }
 
+type User struct {
+	Email        string `json:"email"`
+	PasswordHash string `json:"-"`
+}
+
+type RegisterRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 var products = []Product{
 	{ID: 1, Name: "Klawiatura", Price: 149.99},
 	{ID: 2, Name: "Myszka", Price: 79.99},
 	{ID: 3, Name: "Monitor", Price: 899.00},
 }
+
+var (
+	users   = map[string]User{}
+	usersMu sync.Mutex
+)
 
 func enableCORS(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -90,9 +113,86 @@ func paymentsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w)
+	if r.Method == http.MethodOptions {
+		return
+	}
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req RegisterRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid data", http.StatusBadRequest)
+		return
+	}
+
+	if req.Email == "" || req.Password == "" {
+		http.Error(w, "Email and password are required", http.StatusBadRequest)
+		return
+	}
+
+	usersMu.Lock()
+	defer usersMu.Unlock()
+
+	if _, exists := users[req.Email]; exists {
+		http.Error(w, "User already exists", http.StatusConflict)
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "Could not process password", http.StatusInternalServerError)
+		return
+	}
+
+	users[req.Email] = User{Email: req.Email, PasswordHash: string(hash)}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "registered"})
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w)
+	if r.Method == http.MethodOptions {
+		return
+	}
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid data", http.StatusBadRequest)
+		return
+	}
+
+	usersMu.Lock()
+	user, exists := users[req.Email]
+	usersMu.Unlock()
+
+	if !exists {
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "logged_in", "email": user.Email})
+}
+
 func main() {
 	http.HandleFunc("/products", productsHandler)
 	http.HandleFunc("/payments", paymentsHandler)
+	http.HandleFunc("/register", registerHandler)
+	http.HandleFunc("/login", loginHandler)
 
 	fmt.Println("Server running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
