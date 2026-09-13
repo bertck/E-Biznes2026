@@ -4,6 +4,7 @@ import Payments from './components/Payments';
 import Cart from './components/Cart';
 import Register from './components/Register';
 import Login from './components/Login';
+import OAuthSuccess from './components/OAuthSuccess';
 import { CartProvider } from './context/CartContext';
 import './App.css';
 
@@ -27,6 +28,7 @@ function App() {
             <Route path="/payments" element={<Payments />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/oauth-success" element={<OAuthSuccess />} />
           </Routes>
         </div>
       </BrowserRouter>

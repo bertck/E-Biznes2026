@@ -29,6 +29,10 @@ function Login() {
             });
     };
 
+    const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:8080/auth/google';
+    };
+
     return (
         <div>
             <h2>Login</h2>
@@ -58,6 +62,10 @@ function Login() {
                 </button>
             </form>
             {status && <p data-cy="login-status">{status}</p>}
+            <hr />
+            <button data-cy="google-login-btn" onClick={handleGoogleLogin}>
+                Login with Google
+            </button>
         </div>
     );
 }
